@@ -7,48 +7,55 @@ pygame.init()
 FPS = 60
 screen1 = pygame.display.set_mode((1200, 800))
 rect(screen1, (214, 214, 208), (0, 0, 1600, 900))
+#Побочная функция для рукава, возвращает массив значений вершин от центра руки
+def generator(x,y,d_c):
+    A=[(int(x -90 * d_c), int(y)),
+     (int(x -40 * d_c), int(y -80 * abs(d_c))),
+     (int(x + 40 * d_c), int(y -30 * abs(d_c))),
+     (int(x + 50 * d_c), int(y +30 * abs(d_c))),
+     (int(x -30 * d_c), int(y + 80 * abs(d_c)))]
+    return A
+
+def Volos(screen,col,A):
+    """
+    Рисует обведенный треугольник(волос) цвета col, по массив точек А
+    """
+    polygon(screen,col,A)
+    polygon(screen, (0,0,0), A,1)
+
+
+def ruka(screen, t_shirt_color: tuple, body_color: tuple,
+             x: int, y: int, d_c: float):
+    """
+    Рисует Правую руку, если d_c>0, Левю руку, если d_c<0.
+    :param (x,y): Центр руки
+    :param d_c: Коэффицент увеличения
+    """
+
+    polygon(screen, body_color, [(int(x -30 * d_c), int(y -10 * abs(d_c))), (int(x + 100 * d_c), int(y -440 * abs(d_c))),
+                                 (int(x + 120 * d_c), int(y -440 * abs(d_c))), (int(x), int(y))])
+    circle(screen, body_color, (int(x + 90 * d_c), int(y -415 * abs(d_c))), int(40 * abs(d_c)))
+    circle(screen, (255, 229, 204), (int(x + 90 * d_c), int(y-415 * abs(d_c))), int(40 * abs(d_c)), 1)
+    polygon(screen, t_shirt_color, generator(x, y,d_c)) # right T-shirt
+    polygon(screen, (0, 0, 0), generator(x, y,d_c), 1)  # line
+
 
 def transfer(screen, t_shirt_color: tuple, body_color: tuple,
              eye_color: tuple, triangle_color: tuple,
              x: int, y: int, d_c: float):
     """
-        Функция рисует Радостного мальчика с поднятыми рками, задаются цвета, левая верхняя точка, коэффицент увеличения.
+        Функция рисует Радостного мальчика с поднятыми рками
+        Задаются цвета, левая верхняя точка, коэффицент увеличения.
     """
-    x-=35
-    y-=12
+    x-=70*d_c
+    y-=24*d_c
     # a boy holding a sign
     circle(screen, t_shirt_color, (int(x + 400 * d_c), int(y + 650 * d_c)), int(240 * d_c))  # body
     circle(screen, body_color, (int(x + 400 * d_c), int(y + 300 * d_c)), int(180 * d_c))  # head
-    # right hand
-    polygon(screen, body_color, [(int(x + 570 * d_c), int(y + 470 * d_c)), (int(x + 700 * d_c), int(y + 40 * d_c)),
-                                 (int(x + 720 * d_c), int(y + 40 * d_c)), (int(x + 600 * d_c), int(y + 480 * d_c))])
-    circle(screen, body_color, (int(x + 690 * d_c), int(y + 65 * d_c)), int(40 * d_c))
-    circle(screen, (255, 229, 204), (int(x + 690 * d_c), int(y + 65 * d_c)), int(40 * d_c), 1)
-    # left hand
-    polygon(screen, body_color, [(int(x + 230 * d_c), int(y + 470 * d_c)), (int(x + 100 * d_c), int(y + 40 * d_c)),
-                                 (int(x + 80 * d_c), int(y + 40 * d_c)), (int(x + 200 * d_c), int(y + 480 * d_c))])
-    circle(screen, body_color, (int(x + 110 * d_c), int(y + 65 * d_c)), int(40 * d_c))
-    circle(screen, body_color, (int(x + 110 * d_c), int(y + 65 * d_c)), int(40 * d_c), 1)
-    polygon(screen, t_shirt_color, [(int(x + 510 * d_c), int(y + 480 * d_c)),
-                                    (int(x + 560 * d_c), int(y + 400 * d_c)),
-                                    (int(x + 640 * d_c), int(y + 450 * d_c)),
-                                    (int(x + 650 * d_c), int(y + 510 * d_c)),
-                                    (int(x + 570 * d_c), int(y + 540 * d_c))])  # right T-shirt
-    polygon(screen, (0, 0, 0), [(int(x + 510 * d_c), int(y + 480 * d_c)),
-                                (int(x + 560 * d_c), int(y + 400 * d_c)),
-                                (int(x + 640 * d_c), int(y + 450 * d_c)),
-                                (int(x + 650 * d_c), int(y + 510 * d_c)),
-                                (int(x + 570 * d_c), int(y + 540 * d_c))], 1)  # line
-    polygon(screen, t_shirt_color, [(int(x + 290 * d_c), int(y + 480 * d_c)),
-                                    (int(x + 240 * d_c), int(y + 400 * d_c)),
-                                    (int(x + 160 * d_c), int(y + 450 * d_c)),
-                                    (int(x + 150 * d_c), int(y + 510 * d_c)),
-                                    (int(x + 230 * d_c), int(y + 540 * d_c))])  # left T-shirt
-    polygon(screen, (0, 0, 0), [(int(x + 290 * d_c), int(y + 480 * d_c)),
-                                (int(x + 240 * d_c), int(y + 400 * d_c)),
-                                (int(x + 160 * d_c), int(y + 450 * d_c)),
-                                (int(x + 150 * d_c), int(y + 510 * d_c)),
-                                (int(x + 230 * d_c), int(y + 540 * d_c))], 1)  # line
+
+    ruka(screen,t_shirt_color, body_color,x + 600*d_c,y + 480*d_c,d_c) #Правая рука
+    ruka(screen, t_shirt_color, body_color, x +200*d_c , y + 480*d_c, -d_c) #Левая рука
+
     # drawing eyes
     ellipse(screen, eye_color, (int(x + 420 * d_c), int(y + 220 * d_c), int(90 * d_c), int(80 * d_c)))  # right eye
     ellipse(screen, (0, 0, 0), (int(x + 420 * d_c), int(y + 220 * d_c), int(90 * d_c), int(80 * d_c)), 1)
@@ -71,66 +78,44 @@ def transfer(screen, t_shirt_color: tuple, body_color: tuple,
                                   (int(x + 500 * d_c), int(y + 370 * d_c)),
                                   (int(x + 300 * d_c), int(y + 370 * d_c))], 1)
     # lots of violet triangles over head - a boy`s really a punk!
-    polygon(screen, triangle_color, [(int(x + 250 * d_c), int(y + 204 * d_c)),
+    Volos(screen,triangle_color,[(int(x + 250 * d_c), int(y + 204 * d_c)),
                                      (int(x + 245 * d_c), int(y + 150 * d_c)),
                                      (int(x + 295 * d_c), int(y + 165 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 250 * d_c), int(y + 204 * d_c)),
-                                (int(x + 245 * d_c), int(y + 150 * d_c)),
-                                (int(x + 295 * d_c), int(y + 165 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 280 * d_c), int(y + 175 * d_c)),
+    Volos(screen, triangle_color, [(int(x + 280 * d_c), int(y + 175 * d_c)),
                                      (int(x + 280 * d_c), int(y + 120 * d_c)),
                                      (int(x + 325 * d_c), int(y + 150 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 280 * d_c), int(y + 175 * d_c)),
-                                (int(x + 280 * d_c), int(y + 120 * d_c)),
-                                (int(x + 325 * d_c), int(y + 150 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 310 * d_c), int(y + 155 * d_c)),
+    Volos(screen, triangle_color, [(int(x + 310 * d_c), int(y + 155 * d_c)),
                                      (int(x + 315 * d_c), int(y + 105 * d_c)),
                                      (int(x + 355 * d_c), int(y + 134 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 310 * d_c), int(y + 155 * d_c)),
-                                (int(x + 315 * d_c), int(y + 105 * d_c)),
-                                (int(x + 355 * d_c), int(y + 134 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 340 * d_c), int(y + 138 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 340 * d_c), int(y + 138 * d_c)),
                                      (int(x + 350 * d_c), int(y + 90 * d_c)),
                                      (int(x + 382 * d_c), int(y + 125 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 340 * d_c), int(y + 138 * d_c)),
-                                (int(x + 350 * d_c), int(y + 90 * d_c)),
-                                (int(x + 382 * d_c), int(y + 125 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 370 * d_c), int(y + 130 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 370 * d_c), int(y + 130 * d_c)),
                                      (int(x + 385 * d_c), int(y + 90 * d_c)),
                                      (int(x + 410 * d_c), int(y + 125 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 370 * d_c), int(y + 130 * d_c)),
-                                (int(x + 385 * d_c), int(y + 90 * d_c)),
-                                (int(x + 410 * d_c), int(y + 125 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 550 * d_c), int(y + 204 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 550 * d_c), int(y + 204 * d_c)),
                                      (int(x + 555 * d_c), int(y + 150 * d_c)),
                                      (int(x + 505 * d_c), int(y + 165 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 550 * d_c), int(y + 204 * d_c)),
-                                (int(x + 555 * d_c), int(y + 150 * d_c)),
-                                (int(x + 505 * d_c), int(y + 165 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 520 * d_c), int(y + 175 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 520 * d_c), int(y + 175 * d_c)),
                                      (int(x + 520 * d_c), int(y + 120 * d_c)),
                                      (int(x + 475 * d_c), int(y + 150 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 520 * d_c), int(y + 175 * d_c)),
-                                (int(x + 520 * d_c), int(y + 120 * d_c)),
-                                (int(x + 475 * d_c), int(y + 150 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 490 * d_c), int(y + 155 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 490 * d_c), int(y + 155 * d_c)),
                                      (int(x + 485 * d_c), int(y + 105 * d_c)),
                                      (int(x + 445 * d_c), int(y + 134 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 490 * d_c), int(y + 155 * d_c)),
-                                (int(x + 485 * d_c), int(y + 105 * d_c)),
-                                (int(x + 445 * d_c), int(y + 134 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 430 * d_c), int(y + 130 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 430 * d_c), int(y + 130 * d_c)),
                                      (int(x + 415 * d_c), int(y + 90 * d_c)),
                                      (int(x + 390 * d_c), int(y + 125 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 430 * d_c), int(y + 130 * d_c)),
-                                (int(x + 415 * d_c), int(y + 90 * d_c)),
-                                (int(x + 390 * d_c), int(y + 125 * d_c))], 1)
-    polygon(screen, triangle_color, [(int(x + 460 * d_c), int(y + 138 * d_c)),
+
+    Volos(screen, triangle_color, [(int(x + 460 * d_c), int(y + 138 * d_c)),
                                      (int(x + 450 * d_c), int(y + 90 * d_c)),
                                      (int(x + 418 * d_c), int(y + 125 * d_c))])
-    polygon(screen, (0, 0, 0), [(int(x + 460 * d_c), int(y + 138 * d_c)),
-                                (int(x + 450 * d_c), int(y + 90 * d_c)),
-                                (int(x + 418 * d_c), int(y + 125 * d_c))], 1)
+
 
 
 def sign(screen, x1: int, y1: int, d_c: float):
@@ -167,8 +152,8 @@ def fanati(x1, y1, d_c):
     color_2 - color of a second boy
     tshrt_color1 - t-shirt color of a first boy
     tshrt_color2 - t-shirt color of a second boy
-    hair_color1 - t-shirt color of a first boy
-    hair_color2 - t-shirt color of a second boy
+    hair_color1 - hair color of a first boy
+    hair_color2 - hair color of a second boy
     eye_color1 - eye color of a first boy
     eye_color2 - eye color of a second boy
 """
@@ -189,6 +174,7 @@ eye_color2 = (67, 240, 220)
 d_c = Razmer/1400.0
 
 fanati(x1,y1,d_c)
+
 
 pygame.display.update()
 clock = pygame.time.Clock()
