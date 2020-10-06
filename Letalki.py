@@ -1,21 +1,47 @@
 import pygame
-from math import sqrt
+from pygame.locals import *
 from pygame.draw import *
 from random import randint
 import os
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.backends.backend_agg as agg
+
+import pylab
+
+fig = pylab.figure(figsize=[6, 4],  # Inches
+                   dpi=200,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
+                   )
+grafic = fig.gca()
+B=[100]*20
+A = [0]*20
+grafic.plot(A)
+canvas = agg.FigureCanvasAgg(fig)
+canvas.draw()
+renderer = canvas.get_renderer()
+raw_data = renderer.tostring_rgb()
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
+
 pygame.init()
 FPS = 120
 screen = pygame.display.set_mode((1200, 800))
+
+size = canvas.get_width_height()
+
+surf = pygame.image.fromstring(raw_data, size, "RGB")
+screen.blit(surf, (0, 0))
 clock = pygame.time.Clock()
-X1, Y1, X2, Y2 = 150, 140, 1100, 700
+X1, Y1, X2, Y2 = 0, 95, 1200, 800
 
 
 def chiska():
-    screen.fill(BLACK)
-    polygon(screen, GREEN, [(X1, Y1), (X1, Y2), (X2, Y2), (X2, Y1)], 3)
+    screen.blit(surf, (0, 0))
+    polygon(screen, GREEN, [(X1, Y1), (X1, Y2), (X2, Y2), (X2, Y1)], 5)
     score()
+    for n in range(N):
+        circle(screen, circs[n][3], (circs[n][0], circs[n][1]), circs[n][2])
 
 
 # Цвета
@@ -48,19 +74,18 @@ def new_ball(n):
 # Статистика
 def score():
     global popal, promazal
-    polygon(screen, (132, 229, 5), [(0, 0), (240, 0),
-                                    (240, 140), (0, 140)])
+
     inscription_font = pygame.font.SysFont('Arial Black', 20)
     inscription = inscription_font.render("Попал = " + str(popal), 5, BLACK)
     inscription1 = inscription_font.render("Промазал = " + str(promazal), 5, (BLACK))
     if popal + promazal > 0:
         inscription2 = inscription_font.render("Успешность = " + str(int(popal * 100 / (promazal + popal))) + "%", 5,
-                                               WHITE)
+                                               BLACK)
     else:
         inscription2 = inscription_font.render("Успешность = " + str(100) + "%", 5, BLACK)
     screen.blit(inscription, (10, 0))
-    screen.blit(inscription1, (10, 50))
-    screen.blit(inscription2, (10, 100))
+    screen.blit(inscription1, (10, 25))
+    screen.blit(inscription2, (10, 50))
 
 
 def check(n, x, y):
@@ -69,7 +94,10 @@ def check(n, x, y):
     else:
         return False
 
-
+def sdvig(c):
+    for i in range(19):
+        A[i]=A[i+1]
+    A[19]=c
 N = 8
 circs = [0] * 15
 for i in range(N):
@@ -80,31 +108,53 @@ for i in range(N):
 pygame.display.update()
 finished = False
 promazal = 0
-popal = 0
+promazal_prev=0
+popal = 1
+popal_prev=0
 s = 0
+time0 = 0
 score()
 pygame.display.update()
+time0 = pygame.time.get_ticks()
 start_time = pygame.time.get_ticks()
 while not finished:
     clock.tick(FPS)
     chiska()
+
     for n in range(N):
-        if (circs[n][0] - circs[n][2] < X1) or (circs[n][0] + circs[n][2] > X2):
+        if (circs[n][0] - circs[n][2] < X1) or (circs[n][0] + circs[n][2] > X2):#Проверка попадания
             circs[n][4] *= -1
             circs[n][0] += circs[n][4]
         elif (circs[n][1] - circs[n][2] < Y1) or (circs[n][1] + circs[n][2] > Y2):
             circs[n][5] *= -1
             circs[n][1] += circs[n][5]
-        elif circs[n][2] > 90:  # Такой порядок для того, чтобы не улетали за границ
+        elif circs[n][2] > 90:  # Такой порядок для того, чтобы не улетали за границ, Уничтожение
             promazal += 1
             new_ball(n)
-        elif (pygame.time.get_ticks() - circs[n][6]) > 60:
+        elif (pygame.time.get_ticks() - circs[n][6]) > 60:#Увеличение
             circs[n][2] += 1
             circs[n][6] = pygame.time.get_ticks()
-        circs[n][0] += circs[n][4]
+        circs[n][0] += circs[n][4]#Передижение
         circs[n][1] += circs[n][5]
         circle(screen, circs[n][3], (circs[n][0], circs[n][1]), circs[n][2])
+    if pygame.time.get_ticks() - time0 > 2000:
+        time0 = pygame.time.get_ticks()
+        sdvig(100*(popal-popal_prev)/(popal+promazal-popal_prev-promazal_prev))
+        promazal_prev=promazal
+        popal_prev=popal
+        B=[(popal*100)/(popal+promazal)]*20
 
+        fig = pylab.figure(figsize=[6, 4],  # Inches
+                           dpi=200,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
+                           )
+        grafic = fig.gca()
+        grafic.plot(B)
+        grafic.plot(A)
+        canvas = agg.FigureCanvasAgg(fig)
+        canvas.draw()
+        renderer = canvas.get_renderer()
+        raw_data = renderer.tostring_rgb()
+        surf = pygame.image.fromstring(raw_data, size, "RGB")
     pygame.display.update()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -123,5 +173,4 @@ while not finished:
                 score()
                 pygame.display.update()
             s = 0
-
 pygame.quit()
