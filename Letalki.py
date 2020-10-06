@@ -122,7 +122,7 @@ while not finished:
     chiska()
 
     for n in range(N):
-        if (circs[n][0] - circs[n][2] < X1) or (circs[n][0] + circs[n][2] > X2):#Проверка попадания
+        if (circs[n][0] - circs[n][2] < X1) or (circs[n][0] + circs[n][2] > X2):#Проверка стены
             circs[n][4] *= -1
             circs[n][0] += circs[n][4]
         elif (circs[n][1] - circs[n][2] < Y1) or (circs[n][1] + circs[n][2] > Y2):
