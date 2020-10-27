@@ -206,7 +206,6 @@ def new_game(event=''):
                 canv.bind('<Button-1>', '')
                 canv.bind('<ButtonRelease-1>', '')
                 canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(bullet) + ' выстрелов')
-            print(b.x,b.y,b.id)
         canv.update()
         time.sleep(z)
         g1.targetting()
