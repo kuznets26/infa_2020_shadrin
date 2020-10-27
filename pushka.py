@@ -11,7 +11,7 @@ root.geometry('800x600')
 canv = tk.Canvas(root, bg='white')
 canv.pack(fill=tk.BOTH, expand=1)
 
-
+score = 0
 class ball():
     def __init__(self, x=40, y=450):
         """ Конструктор класса ball
@@ -57,16 +57,14 @@ class ball():
             self.vx*=-1
         if self.x+self.r>800:
             self.vx*=-1
-        if self.y-self.r<10:
-            self.vy*=-1
-            self.y -= self.vy
         if self.y+self.r>600:
-            self.vy*=-0.9
+            self.vy*=-0.8
             self.y -= self.vy
         self.vy-=gravitation
         self.x += self.vx
         self.y -= self.vy
         self.t_live+=1
+        self.set_coords()
 
 
     def hittest(self,t1):
@@ -83,17 +81,14 @@ class ball():
 
 
     def draw(self):
+        canv.coords(self,
+                    self.x - self.r,
+                    self.y - self.r,
+                    self.x + self.r,
+                    self.y + self.r
+                    )
+    def deletes(self):
         canv.delete(self.id)
-        self.id = canv.create_oval(
-            self.x - self.r,
-            self.y - self.r,
-            self.x + self.r,
-            self.y + self.r,
-            fill=self.color
-        )
-        if self.t_live>80:
-            canv.delete(self.id)
-
 
 
 class gun():
@@ -150,7 +145,7 @@ class target():
         self.points = 0
         self.live = 1
         self.id = canv.create_oval(0,0,0,0)
-        self.id_points = canv.create_text(30,30,text = self.points,font = '28')
+        self.id_points = 0
         self.new_target()
 
     def new_target(self):
@@ -159,14 +154,18 @@ class target():
         y = self.y = rnd(300, 550)
         r = self.r = rnd(2, 50)
         color = self.color = 'red'
+        global score
+        self.points = score
+        self.id_points = canv.create_text(100,30,text = 'Счет = '+str(self.points) ,font = '28')
         canv.coords(self.id, x - r, y - r, x + r, y + r)
         canv.itemconfig(self.id, fill=color)
 
-    def hit(self, points=1):
+    def hit(self):
         """Попадание шарика в цель."""
         canv.coords(self.id, -10, -10, -10, -10)
-        self.points += points
-        canv.itemconfig(self.id_points, text=self.points)
+        global score
+        score += int((800/bullet)/self.r)
+        self.id_points = canv.create_text(80,30,text = 'Счет = '+str(self.points) ,font = '28')
 
 
 
@@ -179,6 +178,13 @@ balls = []
 
 def new_game(event=''):
     global gun, t1, screen1, balls, bullet, gravitation
+    canv.delete(tk.ALL)
+    t1 = target()
+    screen1 = canv.create_text(400, 300, text='', font='28')
+    g1 = gun()
+    bullet = 0
+    balls = []
+
     gravitation = 2
     t1.new_target()
     bullet = 0
@@ -189,23 +195,36 @@ def new_game(event=''):
 
     z = 0.016
     t1.live = 1
-    while t1.live or len(balls)>0:
+    while t1.live>0:
         for b in balls:
             b.move()
             b.draw()
             if b.hittest(t1) and t1.live:
                 t1.live = 0
                 t1.hit()
+                b.deletes()
+
                 canv.bind('<Button-1>', '')
                 canv.bind('<ButtonRelease-1>', '')
                 canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(bullet) + ' выстрелов')
+            print(b.x,b.y,b.id)
         canv.update()
         time.sleep(z)
         g1.targetting()
         g1.power_up()
-    canv.itemconfig(screen1, text='')
-    canv.delete(gun)
-    print("lnfanfojfnsjo")
-    root.after(5, new_game())
-while True:
+    time.sleep(1.5)
+    canv.itemconfig(screen1, text='Новая игра через 3...')
+    canv.update()
+    time.sleep(1)
+    canv.itemconfig(screen1, text='Новая игра через 2...')
+    canv.update()
+    time.sleep(1)
+    canv.itemconfig(screen1, text='Новая игра через 1...')
+    canv.update()
+    time.sleep(1)
+    canv.itemconfig(screen1, text='Поехали!')
+    canv.update()
+    time.sleep(0.5)
     new_game()
+
+new_game()
