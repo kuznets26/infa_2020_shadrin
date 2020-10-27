@@ -164,8 +164,7 @@ class target():
         """Попадание шарика в цель."""
         canv.coords(self.id, -10, -10, -10, -10)
         global score
-        score += int((800/bullet)/self.r)
-        self.id_points = canv.create_text(80,30,text = 'Счет = '+str(self.points) ,font = '28')
+        score += int((500/bullet)/self.r)
 
 
 
