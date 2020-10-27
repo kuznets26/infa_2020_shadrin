@@ -8,7 +8,6 @@ import matplotlib.pyplot
 
 matplotlib.use("Agg")
 import matplotlib.backends.backend_agg as agg
-
 import pylab
 
 # Цвета
@@ -23,15 +22,15 @@ if 0 == 0:
     WHITE = (255, 255, 255)
     COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 
+# drawing a graphic
 fig = pylab.figure(figsize=[6, 4],  # Inches
-                   dpi=200,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
-                   )
-grafic = fig.gca()
+                   dpi=200)  # 100 dots per inch, so the resulting buffer is 400x400 pixels
+graf = fig.gca()
 B = [100] * 20
 A = [0] * 20
 matplotlib.pyplot.xlabel(r'Время')
 matplotlib.pyplot.ylabel(r"Успешность")
-grafic.plot(A)
+graf.plot(A)
 canvas = agg.FigureCanvasAgg(fig)
 canvas.draw()
 renderer = canvas.get_renderer()
@@ -39,7 +38,7 @@ raw_data = renderer.tostring_rgb()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 pygame.init()
-FPS = 120
+FPS = 200
 screen = pygame.display.set_mode((1200, 800))
 
 size = canvas.get_width_height()
@@ -47,46 +46,44 @@ size = canvas.get_width_height()
 surf = pygame.image.fromstring(raw_data, size, "RGB")
 screen.blit(surf, (0, 0))
 clock = pygame.time.Clock()
-X1, Y1, X2, Y2 = 0, 95, 1200, 800
+X1, Y1, X2, Y2 = 0, 0, 1200, 800
 
+
+# creating an inscription after 2 seconds of 100% hits
 def KRASAWWWA():
     inscription_font = pygame.font.SysFont('Arial Black', 60)
-    inscription = inscription_font.render("KRASAWWWA, 100% POPADANIE",5,(randint(1,254),randint(1,254),randint(1,254)))
+    inscription = inscription_font.render("KRASAWWWA, 100% POPADANIE", 5,
+                                          (randint(1, 254), randint(1, 254), randint(1, 254)))
     screen.blit(inscription, (100, 0))
 
-def chiska(uspshnost):
+
+# drawing background
+def draw_background():
     screen.blit(surf, (0, 0))
     polygon(screen, GREEN, [(X1, Y1), (X1, Y2), (X2, Y2), (X2, Y1)], 5)
-    score()
-    for n in range(N):
-        circle(screen, circs[n][3], (circs[n][0], circs[n][1]), circs[n][2])
-    if (uspeshnost == 100) and (popal > 0):
+    if (success == 100) and (hit > 0):
         KRASAWWWA()
 
 
-# Новый шарик
+# drawing new ball
 def new_ball(n):
-    circs[n][0] = randint(X1 + 150, X2 - 150)  # x
-    circs[n][1] = randint(Y1 + 100, Y2 - 100)  # y
-    circs[n][2] = randint(25, 50)  # r
-    circs[n][3] = COLORS[randint(0, 5)]  # col
-    a = randint(0, 1) * 2 - 1
-    circs[n][4] = randint(1, 2) * a  # Vx
-    a = randint(0, 1) * 2 - 1
-    circs[n][5] = randint(1, 2) * a  # Vy
-    circs[n][6] = pygame.time.get_ticks()
-    circle(screen, circs[n][3], (circs[n][0], circs[n][1]), circs[n][2])
+    ball_params[n][0] = randint(((2 * X1 + X2) // 3), round(X2 // 1.5))  # x
+    ball_params[n][1] = randint(round((2 * Y1 + Y2) // 3), round(Y2 // 1.5))  # y
+    ball_params[n][2] = randint(25, 50)  # r
+    ball_params[n][3] = COLORS[randint(0, 5)]  # colors
+    ball_params[n][4] = randint(-500, 500) + 1  # vx
+    ball_params[n][5] = randint(-500, 500) + 1  # vy
+    ball_params[n][6] = pygame.time.get_ticks()
 
 
-# Статистика
+# drawing score
 def score():
-    global popal, promazal
-
+    global hit, miss
     inscription_font = pygame.font.SysFont('Arial Black', 20)
-    inscription = inscription_font.render("Попал = " + str(popal), 5, BLACK)
-    inscription1 = inscription_font.render("Промазал = " + str(promazal), 5, (BLACK))
-    if popal + promazal > 0:
-        inscription2 = inscription_font.render("Успешность = " + str(int(popal * 100 / (promazal + popal))) + "%", 5,
+    inscription = inscription_font.render("Попал = " + str(hit), 5, BLACK)
+    inscription1 = inscription_font.render("Промазал = " + str(miss), 5, BLACK)
+    if hit + miss > 0:
+        inscription2 = inscription_font.render("Успешность = " + str(int(hit * 100 / (miss + hit))) + "%", 5,
                                                BLACK)
     else:
         inscription2 = inscription_font.render("Успешность = " + str(100) + "%", 5, BLACK)
@@ -95,78 +92,92 @@ def score():
     screen.blit(inscription2, (10, 50))
 
 
+# checking if we hit the ball
 def check(n, x, y):
-    if (((x - circs[n][0]) ** 2 + (y - circs[n][1]) ** 2) < circs[n][2] ** 2):
+    global ball_params
+    if (((x - ball_params[n][0]) ** 2 + (y - ball_params[n][1]) ** 2) < ball_params[n][2] ** 2):
         return True
     else:
         return False
 
 
+# checking if we hit the ball and creates a new ball
+def handler(n):
+    global hit
+    global s
+    global start_time
+    if check(n, event.pos[0], event.pos[1]):
+        hit += 1
+        s = 1
+        new_ball(n)
+        start_time = pygame.time.get_ticks()
+
+
+# drawing a ball
+def draw_ball(n):
+    global screen
+    global ball_params
+    circle(screen, ball_params[n][3], (ball_params[n][0], ball_params[n][1]), ball_params[n][2])
+
+
+# checking if we need to blow the destruction up
+def destruction(n):
+    global miss
+    if ball_params[n][2] > 90:  # Такой порядок для того, чтобы не улетали за границ, Уничтожение
+        miss += 1
+        new_ball(n)
+    elif pygame.time.get_ticks() - ball_params[n][6] > 60:  # Увеличение
+        ball_params[n][2] += 1
+        ball_params[n][6] = pygame.time.get_ticks()
+
+
+# moving the ball
+def move_ball(n):
+    global miss
+    if ball_params[n][0] - ball_params[n][2] < X1:
+        ball_params[n][4] *= -1
+        ball_params[n][0] += 3 * ball_params[n][4] // FPS
+    if ball_params[n][0] + ball_params[n][2] > X2:  # Проверка стены
+        ball_params[n][4] *= -1
+        ball_params[n][0] += 3 * ball_params[n][4] // FPS
+    if ball_params[n][1] - ball_params[n][2] < Y1:
+        ball_params[n][5] *= -1
+        ball_params[n][1] += 3 * ball_params[n][5] // FPS
+    if ball_params[n][1] + ball_params[n][2] > Y2:
+        ball_params[n][5] *= -1
+        ball_params[n][1] += 3 * ball_params[n][5] // FPS
+    ball_params[n][0] += ball_params[n][4] // FPS  # Передижение
+    ball_params[n][1] += ball_params[n][5] // FPS
+
+
+# for graph(unknown function)
 def sdvig(c):
     for i in range(19):
         A[i] = A[i + 1]
     A[19] = c
 
 
-N = 8
-circs = [0] * 15
-for i in range(N):
-    circs[i] = [0] * 7
-# Заполнение массива шариков
-for i in range(N):
-    new_ball(i)
-pygame.display.update()
-finished = False
-promazal = 0
-promazal_prev = 0
-popal = 1
-popal_prev = 0
-s = 0
-time0 = 0
-uspeshnost =0
-score()
-pygame.display.update()
-time0 = pygame.time.get_ticks()
-start_time = pygame.time.get_ticks()
-while not finished:
-    clock.tick(FPS)
-    chiska(uspeshnost)
-
-    for n in range(N):
-        if (circs[n][0] - circs[n][2] < X1) or (circs[n][0] + circs[n][2] > X2):  # Проверка стены
-            circs[n][4] *= -1
-            circs[n][0] += circs[n][4]
-        elif (circs[n][1] - circs[n][2] < Y1) or (circs[n][1] + circs[n][2] > Y2):
-            circs[n][5] *= -1
-            circs[n][1] += circs[n][5]
-        elif circs[n][2] > 90:  # Такой порядок для того, чтобы не улетали за границ, Уничтожение
-            promazal += 1
-            new_ball(n)
-        elif (pygame.time.get_ticks() - circs[n][6]) > 60:  # Увеличение
-            circs[n][2] += 1
-            circs[n][6] = pygame.time.get_ticks()
-        circs[n][0] += circs[n][4]  # Передижение
-        circs[n][1] += circs[n][5]
-        circle(screen, circs[n][3], (circs[n][0], circs[n][1]), circs[n][2])
+# building a graphic
+def graphic():
+    global time0, success, miss_prev, hit_prev, hit, miss, B, fig, graf, canvas, renderer, raw_data, surf
     if pygame.time.get_ticks() - time0 > 2000:
         time0 = pygame.time.get_ticks()
-        if (popal + promazal - popal_prev - promazal_prev)==0:
-            uspeshnost=0
+        if (hit + miss - hit_prev - miss_prev) == 0:
+            success = 0
         else:
-            uspeshnost=100*(popal - popal_prev) / (popal + promazal - popal_prev - promazal_prev)
-        sdvig(uspeshnost)
-        promazal_prev = promazal
-        popal_prev = popal
-        B = [(popal * 100) / (popal + promazal)] * 20
+            success = 100 * (hit - hit_prev) / (hit + miss - hit_prev - miss_prev)
+        sdvig(success)
+        miss_prev = miss
+        hit_prev = hit
+        B = [(hit * 100) / (hit + miss)] * 20
 
         fig = pylab.figure(figsize=[6, 4],  # Inches
-                           dpi=200,  # 100 dots per inch, so the resulting buffer is 400x400 pixels
-                           )
+                           dpi=200)  # 100 dots per inch, so the resulting buffer is 400x400 pixels
         matplotlib.pyplot.xlabel(r'Время')
         matplotlib.pyplot.ylabel(r"Успешность")
-        grafic = fig.gca()
-        grafic.plot(B, color='g')
-        grafic.plot(A, color='b')
+        graf = fig.gca()
+        graf.plot(B, color='g')
+        graf.plot(A, color='b')
         canvas = agg.FigureCanvasAgg(fig)
         canvas.draw()
         renderer = canvas.get_renderer()
@@ -174,22 +185,40 @@ while not finished:
         surf = pygame.image.fromstring(raw_data, size, "RGB")
 
 
-    pygame.display.update()
+# starting painting
+N = 8
+ball_params = [0] * 15
+for i in range(N):
+    ball_params[i] = [0] * 7
+miss = 0
+miss_prev = 0
+hit = 1
+hit_prev = 0
+s = 0
+time0 = 0
+success = 0
+time0 = pygame.time.get_ticks()
+start_time = pygame.time.get_ticks()
+finished = False
+for i in range(N):
+    new_ball(i)
+while not finished:
+    clock.tick(FPS)
+    graphic()
+    draw_background()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for i in range(N):
-                if check(i, event.pos[0], event.pos[1]):  # Проверка на попадание
-                    chiska(uspeshnost)
-                    popal += 1
-                    s = 1
-                    new_ball(i)
-                    start_time = pygame.time.get_ticks()
-                    pygame.display.update()
+                handler(i)
             if s == 0:
-                promazal += 1
-                score()
-                pygame.display.update()
+                miss += 1
             s = 0
+    score()
+    for i in range(N):
+        destruction(i)
+        move_ball(i)
+        draw_ball(i)
+    pygame.display.update()
 pygame.quit()
