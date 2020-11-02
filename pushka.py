@@ -129,7 +129,7 @@ class cool_ball(ball):
     def explode(self):
         global balls
         self.deletes()
-        n = rnd(1, 5, 1)
+        n = rnd(2, 5, 1)
         parts, s = cool_ball.divide(n, 0)
         print(parts, s)
         p_x, s_p_x = cool_ball.divide(n, 1)
@@ -165,8 +165,8 @@ class gun():
         """
         global balls, bullet
         bullet += 1
-        l = randint(1, 4)
-        if l > 2:
+        l = randint(1, 3)
+        if l > 1:
             new_ball = cool_ball()
         else:
             new_ball = ball()
